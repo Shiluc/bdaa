@@ -256,7 +256,8 @@
                 fpsLimit: 60,
                 fullScreen: { enable: false },
                 particles: {
-                    number: { value: 50, density: { enable: true, value_area: 800 } },
+                    // 修改点：将粒子数量从 50 增加到 150
+                    number: { value: 150, density: { enable: true, value_area: 800 } },
                     color: { value: ["#ffffff", "#a5f3fc", "#e879f9"] },
                     shape: { type: "circle" },
                     opacity: { value: 0.3, random: true, anim: { enable: true, speed: 0.5, opacity_min: 0.1, sync: false } },
