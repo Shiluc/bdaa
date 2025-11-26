@@ -11,11 +11,28 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        zinc: { 850: '#1f1f22', 900: '#18181b', 950: '#09090b' },
-                    },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
                     }
                 }
             }
@@ -23,13 +40,16 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #050509; /* 极深蓝黑色 */
-            color: #e4e4e7; 
+            color: #ffffff; 
             overflow-x: hidden;
+            /* 动态极光背景 */
+            background: linear-gradient(-45deg, #1e1b4b, #312e81, #4c1d95, #0f172a);
+            background-size: 400% 400%;
+            animation: gradient-x 15s ease infinite;
         }
 
         /* 粒子容器样式 */
@@ -37,186 +57,193 @@
             position: fixed;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: 0;
             pointer-events: none !important;
         }
 
-        /* 隐藏滚动条但保留功能 */
+        /* 隐藏滚动条 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* 模态框动画 */
         .modal {
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
             visibility: hidden;
+            backdrop-filter: blur(12px);
         }
         .modal.active {
             opacity: 1;
             visibility: visible;
         }
         .modal-content {
-            transform: scale(0.95) translateY(10px);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .modal.active .modal-content {
             transform: scale(1) translateY(0);
         }
 
-        /* 卡片悬停光效 */
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background-color: rgba(20, 20, 25, 0.4);
-        }
-        .card-hover:hover {
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 20px 40px -20px rgba(100, 149, 237, 0.15);
-            border-color: rgba(255, 255, 255, 0.25);
-            background-color: rgba(24, 24, 35, 0.7);
+        /* === 玻璃拟态卡片 (Glassmorphism) === */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05); /* 极淡的白色透明 */
+            backdrop-filter: blur(16px);            /* 强力磨砂 */
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1); /* 细微白边 */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
         
-        /* 导航栏磨砂效果 */
-        .nav-blur {
-            background: rgba(5, 5, 9, 0.6);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.05);
+            transform: translateY(-6px);
+        }
+
+        /* 导航栏更通透 */
+        .nav-glass {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
-<body class="antialiased min-h-screen relative selection:bg-indigo-500/30">
+<body class="antialiased min-h-screen relative selection:bg-purple-500/50">
 
     <div id="tsparticles"></div>
-    <div class="fixed inset-0 z-[-2] overflow-hidden pointer-events-none opacity-40">
-        <div class="absolute top-[-20%] left-[-10%] w-[60rem] h-[60rem] bg-indigo-900/20 rounded-full blur-[150px]"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[60rem] h-[60rem] bg-violet-900/20 rounded-full blur-[150px]"></div>
+
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[50rem] h-[50rem] bg-cyan-500/20 rounded-full blur-[120px] mix-blend-screen animate-float"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[50rem] h-[50rem] bg-purple-500/20 rounded-full blur-[120px] mix-blend-screen animate-float" style="animation-delay: 2s;"></div>
     </div>
 
-
-    <nav class="fixed w-full z-40 top-0 border-b border-white/5 nav-blur">
-        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+    <nav class="fixed w-full z-40 top-0 nav-glass">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <i class="fas fa-microchip text-indigo-400 text-xl"></i>
-                <span class="text-lg font-bold tracking-wide text-white">大数据与人工智能协会</span>
+                <i class="fas fa-microchip text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-2xl drop-shadow-lg"></i>
+                <span class="text-xl font-bold tracking-wide text-white drop-shadow-md">大数据与人工智能协会</span>
             </div>
-            <div class="flex items-center space-x-6">
-                <a href="#" class="text-sm text-zinc-400 hover:text-white transition">主页</a>
-                <a href="https://github.com" target="_blank" class="text-sm px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full text-white transition border border-white/10 flex items-center">
+            <div class="flex items-center space-x-8">
+                <a href="#" class="text-sm font-medium text-white/70 hover:text-white transition hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">主页</a>
+                <a href="https://github.com" target="_blank" class="text-sm px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full text-white transition border border-white/20 flex items-center font-medium backdrop-blur-md shadow-lg hover:shadow-cyan-500/30">
                     <i class="fab fa-github mr-2"></i>加入我们
                 </a>
             </div>
         </div>
     </nav>
 
-    <main class="relative z-10 pt-36 pb-20 px-6 max-w-6xl mx-auto">
+    <main class="relative z-10 pt-40 pb-20 px-6 max-w-7xl mx-auto">
         
-        <header class="mb-20 text-center md:text-left relative">
-            <h1 class="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-zinc-400 mb-6 tracking-tight relative z-10 pb-2">
-                连接数据 <br class="md:hidden" />定义智能未来
+        <header class="mb-24 text-center md:text-left relative">
+            <h1 class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-purple-200 mb-8 tracking-tight drop-shadow-lg">
+                连接数据 <br class="md:hidden" />定义未来
             </h1>
-            <p class="text-xl text-zinc-400 font-light max-w-2xl leading-relaxed relative z-10">
-                大数据与人工智能协会知识库。点击下方卡片，开启技术进化之旅。
+            <p class="text-xl md:text-2xl text-white/80 font-light max-w-2xl leading-relaxed">
+                <span class="border-b-2 border-cyan-400/50 pb-1">大数据与人工智能协会知识库</span>。点击下方卡片，开启学习之旅。
             </p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <div onclick="openModal('python')" class="card-hover group cursor-pointer backdrop-blur-md p-8 rounded-3xl flex flex-col justify-between h-72 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:bg-yellow-500/15"></div>
+            <div onclick="openModal('python')" class="glass-card group cursor-pointer p-8 rounded-[2rem] flex flex-col justify-between h-80 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-yellow-400/20 rounded-full blur-2xl group-hover:bg-yellow-400/30 transition duration-500"></div>
                 
-                <div class="h-12 w-12 bg-zinc-900/80 rounded-2xl flex items-center justify-center text-yellow-500 mb-4 border border-yellow-500/20 shadow-[0_0_15px_rgba(234,179,8,0.1)]">
-                    <i class="fab fa-python text-2xl"></i>
+                <div class="relative z-10">
+                    <div class="h-14 w-14 bg-white/10 rounded-2xl flex items-center justify-center text-yellow-300 mb-6 border border-white/20 shadow-inner backdrop-blur-sm">
+                        <i class="fab fa-python text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">Python 基础</h3>
+                    <p class="text-sm text-white/60 leading-relaxed font-light">数据科学通用语言。NumPy, Pandas 高效数据处理。</p>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-semibold text-zinc-100 mb-2">Python 基础</h3>
-                    <p class="text-sm text-zinc-500 leading-relaxed">数据科学通用语言。NumPy, Pandas 高效数据处理。</p>
-                </div>
-                <div class="flex items-center text-xs text-zinc-400 mt-4 group-hover:text-yellow-400 transition">
-                    浏览资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
-                </div>
-            </div>
-
-            <div onclick="openModal('ml')" class="card-hover group cursor-pointer backdrop-blur-md p-8 rounded-3xl flex flex-col justify-between h-72 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:bg-blue-500/15"></div>
-
-                <div class="h-12 w-12 bg-zinc-900/80 rounded-2xl flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-                    <i class="fas fa-brain text-2xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-2xl font-semibold text-zinc-100 mb-2">机器学习</h3>
-                    <p class="text-sm text-zinc-500 leading-relaxed">探索模式识别。Scikit-learn 与深度神经网络实战。</p>
-                </div>
-                <div class="flex items-center text-xs text-zinc-400 mt-4 group-hover:text-blue-400 transition">
-                    浏览资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
+                <div class="relative z-10 flex items-center text-xs font-bold tracking-wider text-yellow-200/80 mt-4 group-hover:text-yellow-200 transition uppercase">
+                    资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
                 </div>
             </div>
 
-            <div onclick="openModal('algo')" class="card-hover group cursor-pointer backdrop-blur-md p-8 rounded-3xl flex flex-col justify-between h-72 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:bg-purple-500/15"></div>
+            <div onclick="openModal('ml')" class="glass-card group cursor-pointer p-8 rounded-[2rem] flex flex-col justify-between h-80 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-400/20 rounded-full blur-2xl group-hover:bg-blue-400/30 transition duration-500"></div>
 
-                <div class="h-12 w-12 bg-zinc-900/80 rounded-2xl flex items-center justify-center text-purple-500 mb-4 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)]">
-                    <i class="fas fa-code-branch text-2xl"></i>
+                <div class="relative z-10">
+                    <div class="h-14 w-14 bg-white/10 rounded-2xl flex items-center justify-center text-blue-300 mb-6 border border-white/20 shadow-inner backdrop-blur-sm">
+                        <i class="fas fa-brain text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">机器学习</h3>
+                    <p class="text-sm text-white/60 leading-relaxed font-light">探索模式识别。Scikit-learn 与深度神经网络实战。</p>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-semibold text-zinc-100 mb-2">算法与结构</h3>
-                    <p class="text-sm text-zinc-500 leading-relaxed">修炼内功。LeetCode 刷题指南与复杂性分析。</p>
-                </div>
-                <div class="flex items-center text-xs text-zinc-400 mt-4 group-hover:text-purple-400 transition">
-                    浏览资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
+                <div class="relative z-10 flex items-center text-xs font-bold tracking-wider text-blue-200/80 mt-4 group-hover:text-blue-200 transition uppercase">
+                    资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
                 </div>
             </div>
 
-            <div onclick="openModal('db')" class="card-hover group cursor-pointer backdrop-blur-md p-8 rounded-3xl flex flex-col justify-between h-72 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:bg-cyan-500/15"></div>
+            <div onclick="openModal('algo')" class="glass-card group cursor-pointer p-8 rounded-[2rem] flex flex-col justify-between h-80 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-purple-400/20 rounded-full blur-2xl group-hover:bg-purple-400/30 transition duration-500"></div>
 
-                <div class="h-12 w-12 bg-zinc-900/80 rounded-2xl flex items-center justify-center text-cyan-500 mb-4 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)]">
-                    <i class="fas fa-database text-2xl"></i>
+                <div class="relative z-10">
+                    <div class="h-14 w-14 bg-white/10 rounded-2xl flex items-center justify-center text-purple-300 mb-6 border border-white/20 shadow-inner backdrop-blur-sm">
+                        <i class="fas fa-code-branch text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">算法与结构</h3>
+                    <p class="text-sm text-white/60 leading-relaxed font-light">修炼内功。LeetCode 刷题指南与复杂性分析。</p>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-semibold text-zinc-100 mb-2">数据库技术</h3>
-                    <p class="text-sm text-zinc-500 leading-relaxed">海量数据存储。SQL 优化, Redis 缓存与分布式。</p>
-                </div>
-                <div class="flex items-center text-xs text-zinc-400 mt-4 group-hover:text-cyan-400 transition">
-                    浏览资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
+                <div class="relative z-10 flex items-center text-xs font-bold tracking-wider text-purple-200/80 mt-4 group-hover:text-purple-200 transition uppercase">
+                    资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
                 </div>
             </div>
 
-            <div onclick="openModal('sites')" class="card-hover group cursor-pointer backdrop-blur-md p-8 rounded-3xl flex flex-col justify-between h-72 relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition group-hover:bg-pink-500/15"></div>
+            <div onclick="openModal('db')" class="glass-card group cursor-pointer p-8 rounded-[2rem] flex flex-col justify-between h-80 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-cyan-400/20 rounded-full blur-2xl group-hover:bg-cyan-400/30 transition duration-500"></div>
 
-                <div class="h-12 w-12 bg-zinc-900/80 rounded-2xl flex items-center justify-center text-pink-500 mb-4 border border-pink-500/20 shadow-[0_0_15px_rgba(236,72,153,0.1)]">
-                    <i class="fas fa-rocket text-2xl"></i>
+                <div class="relative z-10">
+                    <div class="h-14 w-14 bg-white/10 rounded-2xl flex items-center justify-center text-cyan-300 mb-6 border border-white/20 shadow-inner backdrop-blur-sm">
+                        <i class="fas fa-database text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">数据库技术</h3>
+                    <p class="text-sm text-white/60 leading-relaxed font-light">海量数据存储。SQL 优化, Redis 缓存与分布式。</p>
                 </div>
-                <div>
-                    <h3 class="text-2xl font-semibold text-zinc-100 mb-2">常用平台</h3>
-                    <p class="text-sm text-zinc-500 leading-relaxed">菜鸟教程、LeetCode、B站等优质自学直通车。</p>
+                <div class="relative z-10 flex items-center text-xs font-bold tracking-wider text-cyan-200/80 mt-4 group-hover:text-cyan-200 transition uppercase">
+                    资源库 <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-1 transition"></i>
                 </div>
-                <div class="flex items-center text-xs text-zinc-400 mt-4 group-hover:text-pink-400 transition">
+            </div>
+
+            <div onclick="openModal('sites')" class="glass-card group cursor-pointer p-8 rounded-[2rem] flex flex-col justify-between h-80 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-40 h-40 bg-pink-400/20 rounded-full blur-2xl group-hover:bg-pink-400/30 transition duration-500"></div>
+
+                <div class="relative z-10">
+                    <div class="h-14 w-14 bg-white/10 rounded-2xl flex items-center justify-center text-pink-300 mb-6 border border-white/20 shadow-inner backdrop-blur-sm">
+                        <i class="fas fa-rocket text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">常用平台</h3>
+                    <p class="text-sm text-white/60 leading-relaxed font-light">菜鸟教程、LeetCode、B站等优质自学直通车。</p>
+                </div>
+                <div class="relative z-10 flex items-center text-xs font-bold tracking-wider text-pink-200/80 mt-4 group-hover:text-pink-200 transition uppercase">
                     点击跳转 <i class="fas fa-external-link-alt ml-2 transform group-hover:translate-x-1 transition"></i>
                 </div>
             </div>
 
         </div>
 
-        <footer class="mt-32 border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center opacity-60">
-            <p class="text-zinc-500 text-sm">© 2025 大数据与人工智能协会.</p>
-            </footer>
+        <footer class="mt-32 border-t border-white/10 pt-10 text-center">
+            <p class="text-white/40 text-sm font-light">© 2025 大数据与人工智能协会.</p>
+        </footer>
     </main>
 
     <div id="resourceModal" class="modal fixed inset-0 z-50 flex items-center justify-center px-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-lg" onclick="closeModal()"></div>
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-md" onclick="closeModal()"></div>
         
-        <div class="modal-content relative bg-zinc-900/90 border border-white/10 w-full max-w-2xl rounded-2xl shadow-2xl p-8 overflow-hidden">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white p-2 z-10">
+        <div class="modal-content relative bg-[#1e1b4b]/90 border border-white/20 w-full max-w-2xl rounded-3xl shadow-2xl p-8 overflow-hidden backdrop-blur-xl">
+            <button onclick="closeModal()" class="absolute top-5 right-5 text-white/50 hover:text-white p-2 z-20 transition">
                 <i class="fas fa-times text-xl"></i>
             </button>
             
             <h2 id="modalTitle" class="text-3xl font-bold text-white mb-2 relative z-10"></h2>
-            <p id="modalDesc" class="text-zinc-400 mb-8 text-sm relative z-10"></p>
+            <p id="modalDesc" class="text-white/60 mb-8 text-sm relative z-10 font-light"></p>
 
             <div class="space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scroll" id="modalLinks">
                 </div>
-            <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+            
+            <div class="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[80px] pointer-events-none"></div>
         </div>
     </div>
 
@@ -229,13 +256,13 @@
                 fpsLimit: 60,
                 fullScreen: { enable: false },
                 particles: {
-                    number: { value: 60, density: { enable: true, value_area: 900 } },
-                    color: { value: ["#6366f1", "#a855f7", "#ec4899"] }, 
+                    number: { value: 50, density: { enable: true, value_area: 800 } },
+                    color: { value: ["#ffffff", "#a5f3fc", "#e879f9"] },
                     shape: { type: "circle" },
-                    opacity: { value: 0.4, random: true, anim: { enable: true, speed: 0.5, opacity_min: 0.1, sync: false } },
-                    size: { value: 2.5, random: true, anim: { enable: true, speed: 1, size_min: 0.1, sync: false } },
-                    line_linked: { enable: true, distance: 150, color: "#71717a", opacity: 0.15, width: 1 },
-                    move: { enable: true, speed: 0.8, direction: "none", random: false, out_mode: "out" }
+                    opacity: { value: 0.3, random: true, anim: { enable: true, speed: 0.5, opacity_min: 0.1, sync: false } },
+                    size: { value: 2, random: true, anim: { enable: true, speed: 1, size_min: 0.1, sync: false } },
+                    line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.1, width: 1 },
+                    move: { enable: true, speed: 0.6, direction: "none", random: false, out_mode: "out" }
                 },
                 interactivity: {
                     detect_on: "window",
@@ -246,7 +273,7 @@
             });
         })();
 
-        // === 2. 资源列表数据 (已根据要求更新) ===
+        // === 2. 资源列表数据 ===
         const resources = {
             python: {
                 title: "🐍 Python 全栈路线",
@@ -254,7 +281,6 @@
                 links: [
                     { name: "Python 官方文档 (中文)", url: "https://docs.python.org/zh-cn/3/", tag: "官方" },
                     { name: "廖雪峰 Python 教程", url: "https://www.liaoxuefeng.com/wiki/1016959663602400", tag: "入门" },
-                    // 修改点 2：删除旧课件，添加指定 B站课程
                     { name: "B站课程", url: "https://space.bilibili.com/37974444/search?keyword=python", tag: "简单入门" }
                 ]
             },
@@ -266,7 +292,6 @@
                     { name: "Scikit-Learn 官方示例库", url: "https://scikit-learn.org/stable/auto_examples/index.html", tag: "文档" },
                     { name: "PyTorch 深度学习极简入门", url: "https://pytorch.org/tutorials/", tag: "框架" },
                     { name: "Hugging Face 大模型指南", url: "https://huggingface.co/learn", tag: "LLM" },
-                    // 修改点 3：新增 ML B站课程
                     { name: "B站课程", url: "https://www.bilibili.com/video/BV1FT4y1E74V/?spm_id_from=333.1387.top_right_bar_window_custom_collection.content.click&vd_source=711ca1b2a0cdd3bac7472bb0e0f7dc78", tag: "视频教程" }
                 ]
             },
@@ -274,7 +299,6 @@
                 title: "⚡ 算法与数据结构",
                 desc: "程序员内功修炼，构建高效解题思维。",
                 links: [
-                    // 修改点 4：清空原有内容，仅保留 B站课程
                     { name: "B站课程", url: "https://www.bilibili.com/video/BV1iF411z7Pu/?spm_id_from=333.1387.search.video_card.click&vd_source=711ca1b2a0cdd3bac7472bb0e0f7dc78", tag: "视频教程" }
                 ]
             },
@@ -313,12 +337,12 @@
             modalDesc.innerText = data.desc;
             
             modalLinks.innerHTML = data.links.map(link => `
-                <a href="${link.url}" target="_blank" class="block group flex items-center justify-between p-4 rounded-xl bg-zinc-800/40 hover:bg-zinc-700/60 border border-white/5 hover:border-indigo-500/30 transition duration-300">
+                <a href="${link.url}" target="_blank" class="block group flex items-center justify-between p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 transition duration-300 shadow-sm hover:shadow-lg hover:-translate-y-1">
                     <div class="flex items-center">
-                        <i class="fas fa-link text-zinc-500 mr-3 text-sm group-hover:text-indigo-400 transition"></i>
-                        <span class="text-zinc-200 font-medium group-hover:text-white transition">${link.name}</span>
+                        <i class="fas fa-link text-white/40 mr-3 text-sm group-hover:text-cyan-300 transition"></i>
+                        <span class="text-white/90 font-medium group-hover:text-white transition">${link.name}</span>
                     </div>
-                    <span class="text-xs px-2 py-1 rounded-md bg-zinc-900 text-zinc-400 group-hover:bg-indigo-900/50 group-hover:text-indigo-200 transition border border-white/5 group-hover:border-indigo-500/20">${link.tag}</span>
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-black/20 text-white/60 group-hover:bg-cyan-500/20 group-hover:text-cyan-200 transition border border-white/5">${link.tag}</span>
                 </a>
             `).join('');
 
